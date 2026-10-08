@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Datenportal Connector
+Comment=Edit Datenportal CMS documents in LibreOffice or Microsoft Office
+Comment[de]=Datenportal-CMS-Dokumente in LibreOffice oder Microsoft Office bearbeiten
+Keywords=CMS;LibreOffice;Datenportal;
+Icon=io.github.atlantpedro.connector
+Categories=Office;
+Exec=datenportal-connector %u
+MimeType=x-scheme-handler/ms-word;x-scheme-handler/ms-excel;
+Terminal=false
+StartupNotify=false

@@ -1,0 +1,112 @@
+# A tag v<version> (the version in app/tauri.conf.json) builds the installers and a draft
+# release with them, the updater's signed latest.json and the Flatpak bundles.
+#
+# Secrets:
+#   TAURI_SIGNING_PRIVATE_KEY, TAURI_SIGNING_PRIVATE_KEY_PASSWORD   the updater key (required)
+#   For signed macOS builds, once there is an Apple Developer ID, add APPLE_CERTIFICATE,
+#   APPLE_CERTIFICATE_PASSWORD, APPLE_SIGNING_IDENTITY, APPLE_ID, APPLE_PASSWORD and
+#   APPLE_TEAM_ID, and pass them in the env of the tauri-action step below. Until then the
+#   app is signed ad hoc. Windows code signing is still to be set up (bundle.windows.signCommand).
+name: Release
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  installers:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            args: ''
+          - os: macos-latest
+            args: --target universal-apple-darwin
+          - os: ubuntu-24.04
+            args: ''
+          - os: ubuntu-24.04-arm
+            args: ''
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - name: Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ runner.os == 'macOS' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+      - uses: Swatinem/rust-cache@v2
+      - uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          projectPath: app
+          tauriScript: npx --yes @tauri-apps/cli@2
+          args: ${{ matrix.args }}
+          tagName: v__VERSION__
+          releaseName: Datenportal Connector __VERSION__
+          releaseDraft: true
+          uploadUpdaterJson: true
+
+  # The Flatpaks are optional: a failure here shows in the run but doesn't fail the release,
+  # and "Re-run failed jobs" retries just these, without rebuilding the installers.
+  flatpak:
+    needs: installers
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-51
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v7
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          manifest-path: flatpak/io.github.atlantpedro.connector.yml
+          bundle: datenportal-connector-${{ matrix.arch }}.flatpak
+          arch: ${{ matrix.arch }}
+          cache-key: flatpak-builder-${{ matrix.arch }}-${{ github.sha }}
+          upload-artifact: false
+      - uses: actions/upload-artifact@v7
+        with:
+          name: flatpak-${{ matrix.arch }}
+          path: datenportal-connector-${{ matrix.arch }}.flatpak
+          retention-days: 3
+
+  # Only adds files to the draft: release actions that update the release itself are
+  # refused the workflow's token ("Resource not accessible by integration").
+  flatpak-upload:
+    needs: flatpak
+    if: ${{ !cancelled() }}
+    continue-on-error: true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: flatpak-*
+          merge-multiple: true
+      - name: Add to the draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          shopt -s nullglob
+          bundles=(*.flatpak)
+          if [ ${#bundles[@]} -eq 0 ]; then echo "::warning::no Flatpak was built"; exit 0; fi
+          gh release upload "$GITHUB_REF_NAME" "${bundles[@]}" --clobber --repo "$GITHUB_REPOSITORY"

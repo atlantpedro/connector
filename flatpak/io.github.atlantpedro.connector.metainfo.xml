@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.atlantpedro.connector</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Datenportal Connector</name>
+  <summary>Edit Datenportal CMS documents in LibreOffice</summary>
+  <summary xml:lang="de">Datenportal-CMS-Dokumente in LibreOffice bearbeiten</summary>
+  <description>
+    <p>
+      Opens the documents you click “Bearbeiten” on in the Beck Datenportal CMS in LibreOffice,
+      uploads every save and releases the document in the CMS when you close it. Changes that
+      can't be uploaded right away are kept and uploaded later, also after a restart.
+    </p>
+    <p xml:lang="de">
+      Öffnet Dokumente, die Sie im Beck-Datenportal-CMS mit „Bearbeiten“ aufrufen, in
+      LibreOffice, lädt jede Speicherung hoch und gibt das Dokument im CMS frei, wenn Sie es
+      schließen. Änderungen, die nicht sofort hochgeladen werden können, werden aufbewahrt und
+      später hochgeladen, auch nach einem Neustart.
+    </p>
+  </description>
+  <launchable type="desktop-id">io.github.atlantpedro.connector.desktop</launchable>
+  <url type="homepage">https://github.com/atlantpedro/connector</url>
+  <url type="bugtracker">https://github.com/atlantpedro/connector/issues</url>
+  <developer id="io.github.atlantpedro">
+    <name>atlantpedro</name>
+  </developer>
+  <content_rating type="oars-1.1"/>
+  <provides>
+    <mediatype>x-scheme-handler/ms-word</mediatype>
+    <mediatype>x-scheme-handler/ms-excel</mediatype>
+  </provides>
+  <releases>
+    <release version="0.1.0" date="2026-10-17"/>
+  </releases>
+</component>

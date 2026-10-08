@@ -1,0 +1,36 @@
+[package]
+name = "datenportal-connector"
+description = "Datenportal Connector: edit Beck Datenportal CMS documents in LibreOffice or Microsoft Office"
+version.workspace = true
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+lodav-core = { path = "../core" }
+log = "0.4"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+tauri-plugin-autostart = "2"
+tauri-plugin-deep-link = "2"
+tauri-plugin-log = "2"
+tauri-plugin-notification = "2"
+tauri-plugin-opener = "2"
+tauri-plugin-single-instance = "2"
+tauri-plugin-updater = { version = "2", optional = true }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+# to tell whether the tray icon's library is there; loading it fails with a panic otherwise
+libloading = "0.7"
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.56"
+
+[features]
+default = ["updater"]
+# off in the Flatpak, which Flatpak updates
+updater = ["dep:tauri-plugin-updater"]

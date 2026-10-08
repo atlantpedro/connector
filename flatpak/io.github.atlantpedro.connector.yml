@@ -1,0 +1,56 @@
+# Datenportal Connector as a Flatpak, for our own repository (not Flathub: it starts
+# LibreOffice on the host through org.freedesktop.Flatpak, which amounts to leaving the sandbox).
+#   flatpak-builder --user --install --force-clean build flatpak/io.github.atlantpedro.connector.yml
+id: io.github.atlantpedro.connector
+runtime: org.gnome.Platform
+runtime-version: '51'
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+command: datenportal-connector
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # start LibreOffice and look for its processes on the host (flatpak-spawn --host)
+  - --talk-name=org.freedesktop.Flatpak
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.kde.StatusNotifierWatcher
+  # versions kept for the user
+  - --filesystem=xdg-documents/Datenportal Connector:create
+  # LibreOffice's prompts (Settings), native and Flatpak LibreOffice
+  - --filesystem=xdg-config/libreoffice
+  - --filesystem=~/.var/app/org.libreoffice.LibreOffice/config/libreoffice
+  # the start at login, written by the app itself
+  - --filesystem=xdg-config/autostart:create
+  # becoming the default for ms-word: and ms-excel: links
+  - --filesystem=xdg-config/mimeapps.list
+build-options:
+  append-path: /usr/lib/sdk/rust-stable/bin
+  env:
+    CARGO_HOME: /run/build/datenportal-connector/cargo
+  # cargo fetches its crates; fine for our repository, Flathub would need vendored sources
+  build-args:
+    - --share=network
+modules:
+  - name: datenportal-connector
+    buildsystem: simple
+    sources:
+      - type: dir
+        path: ..
+        skip:
+          - target
+          - .git
+          - .flatpak-builder
+          - build
+          - repo
+    build-commands:
+      # updates come through Flatpak: without the built-in updater
+      - cargo build --release --locked --no-default-features -p datenportal-connector
+      - install -Dm755 target/release/datenportal-connector /app/bin/datenportal-connector
+      - install -Dm644 flatpak/io.github.atlantpedro.connector.desktop /app/share/applications/io.github.atlantpedro.connector.desktop
+      - install -Dm644 flatpak/io.github.atlantpedro.connector.metainfo.xml /app/share/metainfo/io.github.atlantpedro.connector.metainfo.xml
+      - install -Dm644 app/icons/128x128.png /app/share/icons/hicolor/128x128/apps/io.github.atlantpedro.connector.png
+      - install -Dm644 app/icons/icon.png /app/share/icons/hicolor/512x512/apps/io.github.atlantpedro.connector.png

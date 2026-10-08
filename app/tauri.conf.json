@@ -1,0 +1,81 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Datenportal Connector",
+  "mainBinaryName": "datenportal-connector",
+  "version": "0.1.0",
+  "identifier": "io.github.atlantpedro.connector",
+  "build": {
+    "frontendDist": "../ui"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [],
+    "security": {
+      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis",
+      "app",
+      "dmg",
+      "appimage",
+      "deb"
+    ],
+    "category": "Productivity",
+    "shortDescription": "Edit Datenportal CMS documents in LibreOffice or Microsoft Office",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "installerHooks": "windows/hooks.nsh",
+        "languages": [
+          "German",
+          "English"
+        ],
+        "displayLanguageSelector": false
+      }
+    },
+    "createUpdaterArtifacts": true,
+    "publisher": "atlantpedro",
+    "license": "MIT",
+    "homepage": "https://github.com/atlantpedro/connector",
+    "linux": {
+      "deb": {
+        "depends": [
+          "libayatana-appindicator3-1"
+        ]
+      }
+    },
+    "macOS": {
+      "minimumSystemVersion": "11.0",
+      "signingIdentity": "-"
+    }
+  },
+  "plugins": {
+    "deep-link": {
+      "desktop": {
+        "schemes": [
+          "ms-word",
+          "ms-excel"
+        ]
+      }
+    },
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDEyRUVCOEE5Q0FDQjk5REUKUldUZW1jdktxYmp1RXM5TkVkUFFMYlBmbFdVUEZ3eEg1eWVxOUpZQ3g5azhNbTNMUm1ER0tGOVIK",
+      "endpoints": [
+        "https://github.com/atlantpedro/connector/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
+}

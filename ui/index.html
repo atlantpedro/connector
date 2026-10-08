@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Datenportal Connector</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="bar">
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-view="sessions" data-t="tabDocuments">Documents</button>
+      <button role="tab" data-view="messages"><span data-t="tabMessages">Messages</span><span class="badge" id="unread" hidden></span></button>
+      <button role="tab" data-view="settings" data-t="tabSettings">Settings</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="view" id="view-sessions" role="tabpanel" hidden>
+      <div id="sessions-list" class="list"></div>
+      <div id="sessions-empty" class="empty" hidden>
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M13 5h15l9 9v29H13z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M28 5v9h9M19 25h12M19 31h12M19 37h7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <p class="empty-title" data-t="noDocuments">No document is open.</p>
+        <p data-t="noDocumentsHint">Click “Bearbeiten” in the Datenportal to open a document.</p>
+      </div>
+      <div id="pending" hidden>
+        <h2 data-t="pendingTitle">Waiting from earlier</h2>
+        <p class="hint" data-t="pendingHint">These documents were closed, but the server hasn't taken everything yet. Datenportal Connector keeps trying in the background.</p>
+        <div id="pending-list" class="list"></div>
+      </div>
+      <div class="footer">
+        <button class="link" data-action="open-folder" data-t="openFolder">Open folder</button>
+      </div>
+    </section>
+
+    <section class="view" id="view-messages" role="tabpanel" hidden>
+      <div id="messages-list" class="messages"></div>
+      <div id="messages-empty" class="empty" hidden>
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 11h32v22H20l-8 7v-7H8z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/></svg>
+        <p class="empty-title" data-t="noMessages">No messages yet.</p>
+        <p data-t="noMessagesHint">Anything Datenportal Connector has to tell you is kept here.</p>
+      </div>
+    </section>
+
+    <section class="view" id="view-settings" role="tabpanel" hidden>
+      <div class="group">
+        <!-- in both languages, to be found from either -->
+        <h2>Sprache · Language</h2>
+        <div id="languages" class="options"></div>
+        <p class="error" id="language-error" hidden></p>
+      </div>
+
+      <div class="group">
+        <h2 data-t="editorTitle">Edit documents in</h2>
+        <div id="editors" class="options"></div>
+        <p class="hint" data-t="editorHint">Applies to documents opened from now on.</p>
+      </div>
+
+      <div class="group">
+        <h2>LibreOffice</h2>
+        <label class="check">
+          <input type="checkbox" id="prompts">
+          <span>
+            <span data-t="promptsLabel">Don't ask “Keep current format?” on every save, and hide the bar about disabled macros</span>
+            <span class="hint" id="prompts-hint" data-t="promptsHint">LibreOffice has to be closed for this.</span>
+          </span>
+        </label>
+        <p class="error" id="prompts-error" hidden></p>
+      </div>
+
+      <div class="group">
+        <h2 data-t="backgroundTitle">In the background</h2>
+        <label class="check">
+          <input type="checkbox" id="autostart">
+          <span>
+            <span data-t="autostartLabel">Start at login</span>
+            <span class="hint" data-t="autostartHint">Finishes uploads that a shutdown interrupted. Recommended.</span>
+          </span>
+        </label>
+        <label class="check">
+          <input type="checkbox" id="tray">
+          <span>
+            <span data-t="trayLabel">Show an icon in the system tray</span>
+            <span class="hint" id="tray-hint"></span>
+          </span>
+        </label>
+        <p class="error" id="settings-error" hidden></p>
+      </div>
+
+      <div class="group" id="updates" hidden>
+        <h2 data-t="updatesTitle">Updates</h2>
+        <label class="check">
+          <input type="checkbox" id="updates-auto">
+          <span>
+            <span data-t="updatesAutoLabel">Look for updates once a day</span>
+          </span>
+        </label>
+        <div class="row update-row">
+          <button id="update-check" data-t="updateCheck">Look now</button>
+          <button id="update-install" class="primary" hidden></button>
+          <span class="hint" id="update-status"></span>
+        </div>
+        <p class="error" id="update-error" hidden></p>
+      </div>
+
+      <div class="group about">
+        <h2 data-t="aboutTitle">About</h2>
+        <p><strong>Datenportal Connector</strong> <span id="version"></span></p>
+        <p class="hint"><span data-t="folderIs">Versions that could not be uploaded are kept in</span> <code id="folder"></code></p>
+        <div class="row">
+          <button data-action="open-folder" data-t="openFolder">Open folder</button>
+          <button data-action="open-logs" data-t="openLogs">Open log folder</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>

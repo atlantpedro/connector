@@ -1,0 +1,33 @@
+# Build and test on every platform: the Windows and macOS code is only ever compiled here.
+name: CI
+on:
+  # not for tags: a tag names a commit already tested on its branch
+  push:
+    branches: ['**']
+  pull_request:
+
+# a newer push makes the running checks of the same branch pointless
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - name: Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test --workspace --locked
+      - name: Build without the updater, as the Flatpak does
+        run: cargo build -p datenportal-connector --no-default-features --locked
